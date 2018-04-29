@@ -14,12 +14,12 @@ def detect_language(mixed_text):
 videoDFs = []
 for each_country in country_list: 
     video_list = pandas.read_csv(data_folder + each_country + "videos.csv", usecols=["video_id", "title", "category_id"])
-    video_list.drop_duplicates(subset="video_id", inplace=True)
     video_list["language"] = video_list["title"].apply(detect_language)
     videoDFs.append(video_list)
     
 # Get only English videos
 video_all = pandas.concat(videoDFs)
+video_all.drop_duplicates(subset="video_id", inplace=True)
 video_english = video_all[video_all.apply(lambda x: x["language"] == ["English"], axis=1)]
 
 # Cleanse text for language analysis
