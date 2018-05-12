@@ -1,10 +1,7 @@
 import pandas
 from polyglot.detect import Detector
 from collections import Counter
-
-# Global Params
-data_folder = "data/"
-country_list = ["CA", "DE", "FR", "GB", "US"]
+from global_params import Params
 
 def detect_language(mixed_text): 
     multi_lang = Detector(mixed_text, quiet=True).languages
@@ -12,13 +9,13 @@ def detect_language(mixed_text):
 
 def sample_language(country, language, n_sample=10): 
 # useful post-analysis
-    video_list = pandas.read_csv(data_folder + country + "videos.csv", usecols=["video_id", "title"])
+    video_list = pandas.read_csv(Params.FOLDER_NAME + country + "videos.csv", usecols=["video_id", "title"])
     video_list["language"] = video_list["title"].apply(detect_language)
     video_interest = video_list[video_list.apply(lambda x: language in x["language"], axis=1)]
     return video_interest.sample(n_sample)
     
-for each_country in country_list: 
-    video_list = pandas.read_csv(data_folder + each_country + "videos.csv", usecols=["video_id", "title"])
+for each_country in Params.COUNTRY_ALL: 
+    video_list = pandas.read_csv(Params.FOLDER_NAME + each_country + "videos.csv", usecols=["video_id", "title"])
     video_list["language"] = video_list["title"].apply(detect_language)
     video_language = []
     for each_language in video_list["language"]: 

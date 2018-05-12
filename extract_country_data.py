@@ -1,17 +1,14 @@
 import pandas
+from global_params import Params
 
-# Global Params
-data_folder = "data/"
-country_list = ["CA", "DE", "FR", "GB", "US"]
-
-videoID_list = [pandas.read_csv(data_folder + each_country + "videos.csv", usecols=["video_id"]) 
-                for each_country in country_list]
+videoID_list = [pandas.read_csv(Params.FOLDER_NAME + each_country + "videos.csv", usecols=["video_id"]) 
+                for each_country in Params.COUNTRY_ALL]
 country = []
 videos = []
 
 # Extract, Keep Unique
-for i in range(len(country_list)): 
-    countryA = country_list[i]
+for i in range(len(Params.COUNTRY_ALL)): 
+    countryA = Params.COUNTRY_ALL[i]
     videoA = set(videoID_list[i]["video_id"])
     print("{}: {} videos, {} unique".format(countryA, len(videoID_list[i]), len(videoA)))
     country.extend([countryA for i in range(len(videoA))])
@@ -22,4 +19,4 @@ video_country = pandas.DataFrame.from_dict({"video_id": videos, "country": count
 video_country = video_country.pivot_table(index="video_id", columns="country", aggfunc=len, fill_value=0.0)
 video_country = pandas.DataFrame(video_country.to_records())
 
-video_country.to_csv("video_country_unique.csv", index=False)
+video_country.to_csv(Params.FILE_NAME_COUNTRY, index=False)

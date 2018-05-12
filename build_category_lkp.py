@@ -1,16 +1,13 @@
 import json
 import pandas
-
-# Global Params
-data_folder = "data/"
-country_list = ["CA", "DE", "FR", "GB", "US"]
+from global_params import Params
 
 # Parse JSON File
 country = []
 category_id = []
 category_name = []
-for each_country in country_list: 
-    each_file = data_folder + each_country + "_category_id.json"
+for each_country in Params.COUNTRY_ALL: 
+    each_file = Params.FOLDER_NAME + each_country + "_category_id.json"
     each_lookup = json.load(open(each_file, 'r'))
     for each_category in each_lookup["items"]: 
         country.append(each_country)
@@ -19,4 +16,4 @@ for each_country in country_list:
 
 # Build Table
 category_lkp = pandas.DataFrame.from_dict({"country_code": country, "id": category_id, "name": category_name})
-category_lkp.to_csv("category_lkp.csv", index=False)
+category_lkp.to_csv(Params.FILE_NAME_CATEGORY, index=False)
