@@ -22,9 +22,8 @@ video_english = video_all[video_all.apply(lambda x: x["language"] == ["English"]
 # Cleanse text for language analysis
 video_english.is_copy = False
 title_english = video_english["title"].str.lower()
-title_english = title_english.apply(lambda x: x.translate(str.maketrans('', '', digits)))
-title_english = title_english.apply(lambda x: re.sub(r'[^\w]', ' ', x))
-title_english = title_english.apply(lambda x: ' '.join(x.split()))
+title_english = title_english.apply(lambda x: re.sub(r'[^a-zA-Z]', ' ', x))
+title_english = title_english.apply(lambda x: ' '.join([word for word in x.split() if len(word) > 1 or word == "i"]))
 video_english.loc[:,"title"] = title_english
 
 video_english.drop(columns=["language"]).to_csv(Params.FILE_NAME_VIDEO, index=False)
