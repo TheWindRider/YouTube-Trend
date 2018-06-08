@@ -38,3 +38,22 @@ def create_vocab():
         f.write("{}\n".format(Params.PADWORD))
         for word, index in vocab_processor.vocabulary_._mapping.items():
             f.write("{}\n".format(word))
+            
+def text_to_numeric(title_english): 
+    vocab_file = Params.DIR_DATA + Params.FILE_NAME_VOCAB
+    word_english = pandas.read_csv(vocab_file, sep="\t", header=None)
+    text_english = title_english.astype('str').apply(lambda x: x.encode('utf-8'))
+    # Split to individual words
+    sentences = tf.placeholder(tf.string, [None,])
+    words = tf.string_split(sentences)
+    word_dense = tf.sparse_tensor_to_dense(words, default_value=Params.PADWORD)
+    # Replace each word with its index in the vocabulary
+    word_index = tf.contrib.lookup.index_table_from_file(vocab_file, num_oov_buckets=1, default_value=-1)
+    word_vec = word_index.lookup(word_dense)
+    # Fixed number of words with padding
+    word_padded = tf.pad(word_vec, tf.constant([[0, 0],[0, Params.MAX_DOC_LENGTH]]))
+    word_vec = tf.slice(word_padded, [0, 0], [-1, Params.MAX_DOC_LENGTH])
+    
+    with tf.Session() as sess: 
+        tf.tables_initializer().run()
+        return list(word_vec.eval(feed_dict={sentences: text_english}))
