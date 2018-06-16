@@ -1,9 +1,10 @@
+import numpy
 import data_helpers
 import tensorflow as tf
-from global_params import Params
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
 from nn_architecture import textCNN1
-
-X_train, X_valid, y_train, y_valid, total_words = data_helpers.load_data()
+from global_params import Params
 
 # Model setup using tf.estimator
 def model_classify(features, labels, mode): 
@@ -30,15 +31,28 @@ def model_classify(features, labels, mode):
     
     return estim_specs
 
-model_estimator = tf.estimator.Estimator(model_classify)
-tf.logging.set_verbosity("INFO")
-# Multiple steps of training
-input_train = tf.estimator.inputs.numpy_input_fn(
-    x={'title': X_train}, y=y_train,
-    batch_size=Params.BATCH_SIZE, num_epochs=None, shuffle=True)
-model_estimator.train(input_train, steps=Params.NUM_STEP)
-# Evaluation
-input_test = tf.estimator.inputs.numpy_input_fn(
-    x={'title': X_valid}, y=y_valid,
-    batch_size=Params.BATCH_SIZE, shuffle=False)
-model_estimator.evaluate(input_test)
+def model_train(model_estimator, X_train, y_train): 
+    tf.logging.set_verbosity("INFO")
+    # Multiple steps of training
+    input_train = tf.estimator.inputs.numpy_input_fn(
+        x={'title': X_train}, y=y_train,
+        batch_size=Params.BATCH_SIZE, num_epochs=None, shuffle=True)
+    model_estimator.train(input_train, steps=Params.NUM_STEP)
+
+def model_evaluate(model_estimator, X_valid, y_valid): 
+    tf.logging.set_verbosity("INFO")
+    label_category, category_label = data_helpers.video_label()
+    # Overall accuracy
+    input_test = tf.estimator.inputs.numpy_input_fn(
+        x={'title': X_valid}, y=y_valid,
+        batch_size=Params.BATCH_SIZE, shuffle=False)
+    model_estimator.evaluate(input_test)
+    # Confusion matrix
+    output_test = model_estimator.predict(input_test)
+    y_pred_category = [label_category[y_pred] for y_pred in output_test]
+    y_category = [label_category[y_truth] for y_truth in y_valid]
+    accuracy_matrix = confusion_matrix(y_category, y_pred_category)
+    
+    plt.imshow(accuracy_matrix, interpolation='nearest', cmap=plt.cm.Blues)
+    plt.xticks(numpy.arange(len(label_category)), label_category)
+    plt.yticks(numpy.arange(len(label_category)), label_category)
