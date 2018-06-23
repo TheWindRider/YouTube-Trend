@@ -1,4 +1,6 @@
 import pandas
+from collections import Counter
+from polyglot.detect import Detector
 from mlxtend.frequent_patterns import apriori, association_rules
 from global_params import Params
 
@@ -38,3 +40,18 @@ def country_corr(criteria="confidence", num_country=2):
     result = associate_country[associate_country["basket_size"] == num_country]
     return result.sort_values(by=criteria, ascending=False)
     
+def detect_language(mixed_text): 
+    multi_lang = Detector(mixed_text, quiet=True).languages
+    return [language.name for language in multi_lang if (language.code != "un") & (language.confidence > 10)]
+
+def foreign_language(num_language=5): 
+    for each_country in Params.COUNTRY_ALL: 
+        file_name = Params.DIR_DATA + each_country + "videos.csv"
+        video_curr = pandas.read_csv(file_name, usecols=["video_id", "title"])
+        video_curr["language"] = video_curr["title"].apply(detect_language)
+        video_language = []
+        # possibly multiple languages
+        for each_lang in video_curr["language"]: 
+            video_language.extend(each_lang)
+        languages = Counter(video_language)
+        print(each_country, languages.most_common(num_language))
